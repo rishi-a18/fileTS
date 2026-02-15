@@ -1,0 +1,11 @@
+flask
+flask-sqlalchemy
+flask-migrate
+flask-cors
+python-dotenv
+apscheduler
+google-generativeai
+PyPDF2
+reportlab
+pytest
+PyJWT
