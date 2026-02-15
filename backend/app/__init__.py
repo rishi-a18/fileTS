@@ -33,4 +33,8 @@ def create_app(config_class=Config):
         from app.services.scheduler_service import start_scheduler
         start_scheduler(app)
 
+    @app.route('/')
+    def index():
+        return "Backend is running!", 200
+
     return app
