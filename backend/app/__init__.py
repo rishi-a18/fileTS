@@ -14,7 +14,11 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     migrate.init_app(app, db)
-    CORS(app)
+    CORS(app, resources={r"/api/*": {"origins": [
+        "https://filetrackingsys.vercel.app", 
+        "https://rishi04.pythonanywhere.com",
+        "http://localhost:5173"
+    ]}})
 
     from app.models import User, File, Section, Alert, Escalation
     
