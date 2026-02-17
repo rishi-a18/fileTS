@@ -14,7 +14,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         navigate('/login');
     }
 
-    const sidebarClasses = `fixed inset-y-0 left-0 z-50 w-64 bg-white/80 backdrop-blur-xl border-r border-slate-200/60 text-slate-800 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-2xl shadow-slate-200/50`;
+    const sidebarClasses = `fixed inset-y-0 left-0 z-50 w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/60 text-slate-800 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} shadow-2xl shadow-slate-200/50`;
 
     return (
         <>
@@ -108,10 +108,10 @@ const DashboardLayout = () => {
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main Content Wrapper */}
-            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:ml-64' : ''}`}>
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isSidebarOpen ? 'md:ml-72' : ''}`}>
 
                 {/* Header */}
-                <header className="bg-white/70 backdrop-blur-md shadow-sm z-30 h-20 flex items-center justify-between px-8 sticky top-0 border-b border-slate-200/60 supports-[backdrop-filter]:bg-white/60">
+                <header className="bg-white/70 backdrop-blur-md shadow-sm z-30 h-24 flex items-center justify-between px-8 sticky top-0 border-b border-slate-200/60 supports-[backdrop-filter]:bg-white/60">
                     <div className="flex items-center space-x-4">
                         <button
                             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -120,17 +120,17 @@ const DashboardLayout = () => {
                             <Menu className="w-6 h-6" />
                         </button>
                         {/* JNTU Logo (Left) */}
-                        <img src={jntuLogo} alt="JNTU Logo" className="h-12 object-contain hover:scale-105 transition-transform duration-300" />
+                        <img src={jntuLogo} alt="JNTU Logo" className="h-16 object-contain hover:scale-105 transition-transform duration-300" />
                     </div>
 
                     <div className="flex items-center space-x-6">
                         {/* AP Logo (Right) */}
-                        <img src={apLogo} alt="AP Logo" className="h-12 object-contain hover:scale-105 transition-transform duration-300" />
+                        <img src={apLogo} alt="AP Logo" className="h-16 object-contain hover:scale-105 transition-transform duration-300" />
 
                         <div className="relative">
                             <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                className="h-10 w-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm ring-2 ring-white hover:ring-blue-100 transition-all cursor-pointer"
+                                className="h-12 w-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm ring-2 ring-white hover:ring-blue-100 transition-all cursor-pointer"
                             >
                                 {user?.username?.charAt(0).toUpperCase() || 'U'}
                             </button>
@@ -159,7 +159,7 @@ const DashboardLayout = () => {
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-x-hidden overflow-y-auto flex flex-col scroll-smooth">
                     <div className="p-8 flex-1">
-                        <div className="max-w-7xl mx-auto">
+                        <div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200/60 p-8 min-h-[calc(100vh-12rem)]">
                             <Outlet />
                         </div>
                     </div>
@@ -168,10 +168,7 @@ const DashboardLayout = () => {
                     <footer className="bg-white/50 backdrop-blur-sm border-t border-slate-200/60 py-6 mt-auto">
                         <div className="max-w-7xl mx-auto px-6 text-center">
                             <p className="text-slate-600 font-medium text-sm">
-                                Developed by Mohammed Masoodulla Shariff and Sanapathi Rishitha Reddy
-                            </p>
-                            <p className="text-slate-800 text-xs mt-1 font-bold">
-                                Under the guidance of Dr. G. Jaya Suma
+                                Developed by JNTU-Gurajada Vizianagaram
                             </p>
                         </div>
                     </footer>

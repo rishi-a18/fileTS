@@ -12,10 +12,10 @@ const Home = () => {
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 text-slate-900 font-sans selection:bg-blue-200 selection:text-blue-900 flex flex-col">
             {/* Header */}
             <header className="absolute top-0 w-full z-10">
-                <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div className="container mx-auto px-6 py-6 flex justify-between items-center">
                     <div className="flex items-center space-x-4">
                         {/* JNTU Logo */}
-                        <img src={jntuLogo} alt="JNTU Logo" className="h-14 w-auto object-contain" />
+                        <img src={jntuLogo} alt="JNTU Logo" className="h-20 w-auto object-contain" />
 
                         <div className="hidden md:flex items-center space-x-2">
                             <div className="bg-blue-600 p-2 rounded-lg shadow-lg shadow-blue-500/30">
@@ -49,7 +49,7 @@ const Home = () => {
                         </nav>
 
                         {/* AP Logo */}
-                        <img src={apLogo} alt="AP Logo" className="h-14 w-auto object-contain hidden sm:block" />
+                        <img src={apLogo} alt="AP Logo" className="h-20 w-auto object-contain hidden sm:block" />
                     </div>
                 </div>
             </header>
@@ -147,10 +147,7 @@ const Home = () => {
             <footer className="border-t border-slate-200 bg-white mx-auto w-full px-6 py-8">
                 <div className="container mx-auto text-center">
                     <p className="text-slate-700 font-medium text-base mb-1">
-                        Developed by Mohammed Masoodulla Shariff and Sanapathi Rishitha Reddy
-                    </p>
-                    <p className="text-slate-500 text-sm">
-                        Under the guidance of Dr. G. Jaya Suma
+                        Developed by JNTU-Gurajada Vizianagaram
                     </p>
                 </div>
             </footer>
