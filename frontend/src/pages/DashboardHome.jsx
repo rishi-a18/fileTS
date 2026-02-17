@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { Download, FileText, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Download, FileText, AlertTriangle, CheckCircle, Clock, Eye } from 'lucide-react';
 
 const DashboardHome = () => {
     const [stats, setStats] = useState(null);
@@ -48,6 +48,14 @@ const DashboardHome = () => {
         }
     };
 
+    const handleViewReport = () => {
+        // Open the report in a new tab
+        // Construct URL based on API base URL
+        const baseURL = api.defaults.baseURL || 'http://localhost:5000/api';
+        const reportURL = `${baseURL}/reports/daily?view=true&token=${localStorage.getItem('token')}`;
+        window.open(reportURL, '_blank');
+    };
+
     if (loading) return (
         <div className="flex items-center justify-center h-full">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -78,18 +86,27 @@ const DashboardHome = () => {
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-slate-600 tracking-tight">Dashboard Overview</h1>
                     <p className="text-slate-500 mt-2">Real-time insights and file tracking metrics</p>
                 </div>
-                <button
-                    onClick={handleDownloadReport}
-                    disabled={downloading}
-                    className="mt-6 md:mt-0 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-blue-500/30 flex items-center transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed group"
-                >
-                    {downloading ? (
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                    ) : (
-                        <Download className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                    )}
-                    {downloading ? 'Downloading Report...' : 'Download Daily Report'}
-                </button>
+                <div className="flex space-x-3 mt-6 md:mt-0">
+                    <button
+                        onClick={handleViewReport}
+                        className="bg-white text-blue-600 border border-blue-200 hover:bg-blue-50 font-bold py-2 px-4 rounded-xl shadow-sm flex items-center transition-all duration-300 transform hover:-translate-y-0.5 group"
+                    >
+                        <Eye className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                        View Report
+                    </button>
+                    <button
+                        onClick={handleDownloadReport}
+                        disabled={downloading}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg shadow-blue-500/30 flex items-center transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed group"
+                    >
+                        {downloading ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                        ) : (
+                            <Download className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                        )}
+                        {downloading ? 'Downloading...' : 'Download Report'}
+                    </button>
+                </div>
             </div>
 
             {/* Overview Cards */}

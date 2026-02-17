@@ -1,4 +1,4 @@
-from flask import Blueprint, send_file, current_app
+from flask import Blueprint, send_file, current_app, request
 from app.models import File, Section
 from app.routes.auth import token_required
 import io
@@ -14,6 +14,7 @@ reports_bp = Blueprint('reports', __name__)
 def generate_daily_report(current_user):
     # Only Admin or Collector or Section Officer can generate?
     # For now, allow logged in users
+    view_inline = request.args.get('view') == 'true'
     
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=letter)
@@ -101,4 +102,4 @@ def generate_daily_report(current_user):
     p.save()
     
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name='daily_report.pdf', mimetype='application/pdf')
+    return send_file(buffer, as_attachment=not view_inline, download_name='daily_report.pdf', mimetype='application/pdf')
