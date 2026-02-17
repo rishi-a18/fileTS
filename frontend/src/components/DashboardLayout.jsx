@@ -93,6 +93,14 @@ const Sidebar = ({ isOpen, onClose }) => {
 
 const DashboardLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    }
 
     return (
         <div className="flex h-screen bg-gradient-to-br from-blue-50 via-white to-slate-100 overflow-hidden font-sans selection:bg-blue-200 selection:text-blue-900">
@@ -119,8 +127,31 @@ const DashboardLayout = () => {
                         {/* AP Logo (Right) */}
                         <img src={apLogo} alt="AP Logo" className="h-12 object-contain hover:scale-105 transition-transform duration-300" />
 
-                        <div className="h-10 w-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm ring-2 ring-white">
-                            U
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                className="h-10 w-10 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center text-blue-700 font-bold border border-blue-200 shadow-sm ring-2 ring-white hover:ring-blue-100 transition-all cursor-pointer"
+                            >
+                                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                            </button>
+
+                            {isProfileOpen && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-2 animate-fade-in-up z-50">
+                                    <div className="px-4 py-3 border-b border-slate-100">
+                                        <p className="text-sm font-semibold text-slate-800 truncate">{user?.username}</p>
+                                        <p className="text-xs text-slate-500 mt-0.5 capitalize">{user?.role}</p>
+                                    </div>
+                                    <div className="py-1">
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4 mr-2" />
+                                            Logout
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </header>
@@ -139,7 +170,7 @@ const DashboardLayout = () => {
                             <p className="text-slate-600 font-medium text-sm">
                                 Developed by Mohammed Masoodulla Shariff and Sanapathi Rishitha Reddy
                             </p>
-                            <p className="text-slate-400 text-xs mt-1 font-medium">
+                            <p className="text-slate-800 text-xs mt-1 font-bold">
                                 Under the guidance of Dr. G. Jaya Suma
                             </p>
                         </div>

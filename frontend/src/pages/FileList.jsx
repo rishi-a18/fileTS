@@ -119,7 +119,7 @@ const FileList = () => {
                     <table className="min-w-full whitespace-nowrap">
                         <thead className="bg-slate-50 border-b border-slate-100">
                             <tr>
-                                {['File Name', 'Section', 'Priority', 'Status', 'Upload Date', 'Deadline', 'Actions'].map((header) => (
+                                {['File Name', 'Section', 'Priority', 'Status', 'App Date', 'Upload Date', 'Deadline', 'Actions'].map((header) => (
                                     <th key={header} className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                         {header}
                                     </th>
@@ -145,6 +145,9 @@ const FileList = () => {
                                         </td>
                                         <td className="px-6 py-4"><PriorityBadge priority={file.priority} /></td>
                                         <td className="px-6 py-4"><StatusBadge status={file.status} /></td>
+                                        <td className="px-6 py-4 text-sm text-slate-500">
+                                            {file.extracted_date ? new Date(file.extracted_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+                                        </td>
                                         <td className="px-6 py-4 text-sm text-slate-500">
                                             {file.upload_date ? new Date(file.upload_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
                                         </td>

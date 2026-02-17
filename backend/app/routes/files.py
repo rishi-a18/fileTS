@@ -20,12 +20,12 @@ def allowed_file(filename):
 def get_files(current_user):
     # Filter based on role
     if current_user.role == 'Section Officer':
-        files = File.query.filter_by(section_id=current_user.section_id).all()
+        files = File.query.filter_by(section_id=current_user.section_id).order_by(File.upload_date.desc()).all()
     elif current_user.role == 'Operator':
          # Operators might see all or just what they uploaded? Let's say all for now or recently uploaded
-         files = File.query.all()
+         files = File.query.order_by(File.upload_date.desc()).all()
     else:
-        files = File.query.all()
+        files = File.query.order_by(File.upload_date.desc()).all()
 
     output = []
     for file in files:
@@ -36,6 +36,7 @@ def get_files(current_user):
             'priority': file.priority,
             'status': file.status,
             'upload_date': file.upload_date.isoformat() if file.upload_date else None,
+            'extracted_date': file.extracted_date.isoformat() if file.extracted_date else None,
             'sla_deadline': file.sla_deadline.isoformat() if file.sla_deadline else None
         }
         output.append(file_data)
