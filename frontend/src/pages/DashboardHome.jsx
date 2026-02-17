@@ -52,7 +52,7 @@ const DashboardHome = () => {
         // Open the report in a new tab
         // Construct URL based on API base URL
         const baseURL = api.defaults.baseURL || 'http://localhost:5000/api';
-        const reportURL = `${baseURL}/reports/daily?view=true&token=${localStorage.getItem('token')}`;
+        const reportURL = `${baseURL}/reports/daily?view=true&token=${sessionStorage.getItem('token')}`;
         window.open(reportURL, '_blank');
     };
 
