@@ -16,6 +16,7 @@ def extract_metadata(file_path):
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-flash')
         
+        print(f"Uploading file to Gemini: {file_path}")
         # Upload the file to Gemini
         sample_file = genai.upload_file(path=file_path, display_name="Uploaded File")
         
@@ -28,23 +29,42 @@ def extract_metadata(file_path):
         """
         
         response = model.generate_content([sample_file, prompt])
+        print(f"Gemini response: {response.text}")
         
         # Robust parsing
         import json
         import re
+        from datetime import datetime
         
         text = response.text
         # Clean up markdown code blocks if present
         text = text.replace('```json', '').replace('```', '')
         
+        extracted_data = {'extracted_date': None, 'priority': 'Medium'}
+
         # Find JSON substring
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
             json_str = match.group(0)
-            return json.loads(json_str)
+            try:
+                extracted_data = json.loads(json_str)
+            except json.JSONDecodeError:
+                print(f"Failed to decode JSON: {json_str}")
         else:
             print(f"Failed to find JSON in response: {text}")
-            return {'extracted_date': None, 'priority': 'Medium'}
+        
+        # Fallback if date is None or extraction failed
+        if not extracted_data.get('extracted_date'):
+            print("Trying Regex fallback for date...")
+            # Simple regex for YYYY-MM-DD
+            date_match = re.search(r'\d{4}-\d{2}-\d{2}', text)
+            if date_match:
+                 extracted_data['extracted_date'] = date_match.group(0)
+            else:
+                 # Try other formats? For now let's just stick to what prompt asked or what we can easily parse
+                 pass
+        
+        return extracted_data
             
     except Exception as e:
         print(f"Error in AI extraction: {e}")
