@@ -82,16 +82,16 @@ def generate_daily_report(current_user):
         # Stats for section
         p.setFont("Helvetica", 10)
         p.setFillColor(colors.blue)
-        p.drawString(200, y, f"T: {s_total}")
+        p.drawString(200, y, f"Total: {s_total}")
         
         p.setFillColor(colors.green)
-        p.drawString(260, y, f"C: {s_completed}")
+        p.drawString(280, y, f"Completed: {s_completed}")
         
         p.setFillColor(colors.orange)
-        p.drawString(320, y, f"P: {s_pending}")
+        p.drawString(380, y, f"Pending: {s_pending}")
         
         p.setFillColor(colors.red)
-        p.drawString(380, y, f"O: {s_overdue}")
+        p.drawString(470, y, f"Overdue: {s_overdue}")
         
         y -= 25
         if y < 50:
