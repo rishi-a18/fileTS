@@ -21,7 +21,7 @@ def extract_metadata(file_path):
         
         prompt = """
         Extract the following information from the document:
-        1. Complaint/Document Date (YYYY-MM-DD format)
+        1. Complaint/Document Date (YYYY-MM-DD format). If multiple dates are present, pick the most relevant one (e.g. date of application/complaint).
         2. Priority (Low, Medium, High, Critical) based on the content urgency.
         
         Output valid JSON only: {"extracted_date": "YYYY-MM-DD", "priority": "Level"}
@@ -29,17 +29,21 @@ def extract_metadata(file_path):
         
         response = model.generate_content([sample_file, prompt])
         
-        # Basic parsing (improve for robust JSON extraction)
+        # Robust parsing
         import json
         import re
         
         text = response.text
+        # Clean up markdown code blocks if present
+        text = text.replace('```json', '').replace('```', '')
+        
         # Find JSON substring
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
             json_str = match.group(0)
             return json.loads(json_str)
         else:
+            print(f"Failed to find JSON in response: {text}")
             return {'extracted_date': None, 'priority': 'Medium'}
             
     except Exception as e:
