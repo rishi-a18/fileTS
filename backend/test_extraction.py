@@ -1,30 +1,41 @@
 import os
 import google.generativeai as genai
-from flask import current_app
-import json
+import logging
+# import re
 import re
 from datetime import datetime
+import json
+import dotenv
+dotenv.load_dotenv()
 
-def extract_metadata(file_path):
-    """
-    Extracts metadata from the given file using Gemini API.
-    Returns a dictionary with extracted_date and priority.
-    """
-    api_key = current_app.config.get('GEMINI_API_KEY')
-    if not api_key:
-        print("Gemini API Key not found.")
-        return {'extracted_date': None, 'priority': 'Medium'}
+# Configure logging
+logging.basicConfig(filename='extraction.log', level=logging.INFO, encoding='utf-8', filemode='w')
+
+def extract_metadata_test(file_path):
+    logging.info(f"Testing extraction for: {file_path}")
+    print(f"Testing extraction for: {file_path}")
+    if not os.path.exists(file_path):
+        logging.error("File not found!")
+        return
+
+    # List models to debug 404
+    try:
+        for m in genai.list_models():
+            if 'generateContent' in m.supported_generation_methods:
+                logging.info(f"Available model: {m.name}")
+    except Exception as e:
+        logging.error(f"Error listing models: {e}")
 
     extracted_data = {'extracted_date': None, 'priority': 'Medium'}
     
     try:
-        genai.configure(api_key=api_key)
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
         # Use a model that is available in the list
         model = genai.GenerativeModel('gemini-2.0-flash')
         
-        print(f"Uploading file to Gemini: {file_path}")
+        logging.info(f"Uploading file to Gemini...")
         # Upload the file to Gemini
-        sample_file = genai.upload_file(path=file_path, display_name="Uploaded File")
+        sample_file = genai.upload_file(path=file_path, display_name="Test File")
         
         prompt = """
         Extract the following information from the document:
@@ -34,14 +45,13 @@ def extract_metadata(file_path):
         Output valid JSON only: {"extracted_date": "YYYY-MM-DD", "priority": "Level"}
         """
         
+        logging.info("Generating content...")
         response = model.generate_content([sample_file, prompt])
-        print(f"Gemini response: {response.text}")
+        logging.info(f"Gemini response text: {response.text}")
         
         text = response.text
-        # Clean up markdown code blocks if present
         text = text.replace('```json', '').replace('```', '')
         
-        # Find JSON substring
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
             json_str = match.group(0)
@@ -49,11 +59,8 @@ def extract_metadata(file_path):
                 data = json.loads(json_str)
                 extracted_data['priority'] = data.get('priority', 'Medium')
                 
-                # Validate and normalize date
                 date_str = data.get('extracted_date')
                 if date_str:
-                    # Try to parse and re-format to ensure YYYY-MM-DD
-                    # Support various potential formats returned by AI
                     for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%m-%d-%Y', '%m/%d/%Y'):
                          try:
                              dt = datetime.strptime(date_str, fmt)
@@ -62,28 +69,25 @@ def extract_metadata(file_path):
                          except ValueError:
                              continue
             except json.JSONDecodeError:
-                print(f"Failed to decode JSON: {json_str}")
+                logging.error(f"Failed to decode JSON: {json_str}")
     except Exception as e:
-        print(f"Error in AI extraction or API call: {e}")
-        # Continue to fallback
-        
-    # Fallback if date is None
+        logging.error(f"Error in AI extraction: {e}")
+
+    # Fallback
     if not extracted_data.get('extracted_date'):
-        print("Trying Regex fallback on local file content...")
+        logging.info("Trying Regex fallback...")
         try:
             content = ""
-            ext = os.path.splitext(file_path)[1].lower()
+            import PyPDF2
+            with open(file_path, 'rb') as f:
+                reader = PyPDF2.PdfReader(f)
+                for page in reader.pages:
+                    content += page.extract_text() + "\n"
             
-            if ext == '.txt':
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                    content = f.read()
-            elif ext == '.pdf':
-                import PyPDF2
-                with open(file_path, 'rb') as f:
-                    reader = PyPDF2.PdfReader(f)
-                    for page in reader.pages:
-                        content += page.extract_text() + "\n"
-            
+            logging.info(f"Extracted content length: {len(content)}")
+            logging.info(f"Content preview: {content[:500]}") # Log content
+
+
             # Regex for various date formats with flexible whitespace
             # Matches YYYY -MM -DD, DD -MM -YYYY, DD / MM / YYYY
             date_patterns = [
@@ -105,11 +109,15 @@ def extract_metadata(file_path):
             
             if found_date:
                  extracted_data['extracted_date'] = found_date
-                 print(f"Regex fallback found: {found_date}")
+                 logging.info(f"Regex fallback found: {found_date}")
             else:
-                 print("Regex fallback failed to find a date.")
+                 logging.info("Regex fallback failed to find a date.")
                  
         except Exception as e:
-             print(f"Error in local fallback extraction: {e}")
+             logging.error(f"Error in fallback: {e}")
 
-    return extracted_data
+    logging.info(f"Final extracted data: {extracted_data}")
+    print(f"Final extracted data: {extracted_data}")
+
+if __name__ == "__main__":
+    extract_metadata_test("d:\\file_mgmt\\file_management_system\\fileTS\\backend\\uploads\\coll_letter_1.pdf")
