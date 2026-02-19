@@ -2,12 +2,17 @@ import sqlite3
 import os
 
 # Database path (adjust if needed, usually in instance folder or root)
-db_path = r'd:\file_mgmt\file_management_system\fileTS\backend\instance\filetracking.db'
+base_dir = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(base_dir, 'instance', 'filetracking.db')
 
 # Check if file exists
 if not os.path.exists(db_path):
     print(f"Database not found at {db_path}")
-    exit(1)
+    # Fallback to looking in current directory if instance folder structure differs
+    db_path = os.path.join(base_dir, 'filetracking.db')
+    if not os.path.exists(db_path):
+         print(f"Database not found at {db_path} either.")
+         exit(1)
 
 print(f"Updating database at {db_path}")
 
