@@ -19,13 +19,13 @@ def allowed_file(filename):
 @token_required
 def get_files(current_user):
     # Filter based on role
+    query = File.query.filter_by(is_deleted=False)
+    
     if current_user.role == 'Section Officer':
-        files = File.query.filter_by(section_id=current_user.section_id).order_by(File.upload_date.desc()).all()
-    elif current_user.role == 'Operator':
-         # Operators might see all or just what they uploaded? Let's say all for now or recently uploaded
-         files = File.query.order_by(File.upload_date.desc()).all()
+        files = query.filter_by(section_id=current_user.section_id).order_by(File.upload_date.desc()).all()
     else:
-        files = File.query.order_by(File.upload_date.desc()).all()
+        # Admin, Collector, Operator see all active files
+        files = query.order_by(File.upload_date.desc()).all()
 
     output = []
     for file in files:
@@ -38,6 +38,55 @@ def get_files(current_user):
             'upload_date': file.upload_date.isoformat() if file.upload_date else None,
             'extracted_date': file.extracted_date.isoformat() if file.extracted_date else None,
             'sla_deadline': file.sla_deadline.isoformat() if file.sla_deadline else None
+        }
+        output.append(file_data)
+    
+    return jsonify({'files': output})
+
+@files_bp.route('/<int:file_id>/delete', methods=['POST'])
+@token_required
+def soft_delete_file(current_user, file_id):
+    file = File.query.get_or_404(file_id)
+    
+    # Permission check: Admin, Collector can delete. Section Officer can delete their own section files.
+    if current_user.role not in ['Admin', 'Collector']:
+        if current_user.role != 'Section Officer' or file.section_id != current_user.section_id:
+            return jsonify({'message': 'Permission denied'}), 403
+
+    data = request.get_json()
+    remarks = data.get('remarks')
+    
+    if not remarks:
+        return jsonify({'message': 'Remarks are mandatory for deletion'}), 400
+        
+    file.is_deleted = True
+    file.deletion_remarks = remarks
+    db.session.commit()
+    
+    return jsonify({'message': 'File deleted successfully'}), 200
+
+@files_bp.route('/deleted', methods=['GET'])
+@token_required
+def get_deleted_files(current_user):
+    # Filter based on role
+    query = File.query.filter_by(is_deleted=True)
+    
+    if current_user.role == 'Section Officer':
+        files = query.filter_by(section_id=current_user.section_id).order_by(File.upload_date.desc()).all()
+    else:
+        files = query.order_by(File.upload_date.desc()).all()
+
+    output = []
+    for file in files:
+        file_data = {
+            'id': file.id,
+            'filename': file.filename,
+            'section': file.section_ref.name,
+            'priority': file.priority,
+            'status': file.status,
+            'upload_date': file.upload_date.isoformat() if file.upload_date else None,
+            'extracted_date': file.extracted_date.isoformat() if file.extracted_date else None,
+            'deletion_remarks': file.deletion_remarks
         }
         output.append(file_data)
     
@@ -56,7 +105,7 @@ def upload_file(current_user):
         return jsonify({'message': 'No selected file'}), 400
     
     if not section_id:
-         return jsonify({'message': 'Section is required'}), 400
+        return jsonify({'message': 'Section is required'}), 400
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)

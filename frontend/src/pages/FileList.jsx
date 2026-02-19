@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { Clock, AlertTriangle, CheckCircle, FileText, SquareCheck } from 'lucide-react';
+import { Clock, AlertTriangle, CheckCircle, FileText, SquareCheck, Trash2, X } from 'lucide-react';
 
 const StatusBadge = ({ status }) => {
     switch (status) {
@@ -26,11 +26,80 @@ const PriorityBadge = ({ priority }) => {
     return <span className={`px-2 py-1 text-xs font-semibold rounded ${color}`}>{priority}</span>;
 }
 
+const DeleteModal = ({ isOpen, onClose, onConfirm, loading }) => {
+    const [remarks, setRemarks] = useState('');
+    const [error, setError] = useState('');
+
+    if (!isOpen) return null;
+
+    const handleSubmit = () => {
+        if (!remarks.trim()) {
+            setError('Remarks are mandatory for deletion.');
+            return;
+        }
+        onConfirm(remarks);
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-slate-800">Delete File</h3>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+                
+                <p className="text-slate-600 mb-4">
+                    Are you sure you want to delete this file? This action will move the file to the "Deleted Files" archive.
+                    <br/><span className="text-xs text-slate-500 mt-1 block">Remarks are mandatory.</span>
+                </p>
+
+                <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Deletion Remarks</label>
+                    <textarea
+                        value={remarks}
+                        onChange={(e) => {
+                            setRemarks(e.target.value);
+                            setError('');
+                        }}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-colors ${error ? 'border-red-500' : 'border-slate-300'}`}
+                        rows="3"
+                        placeholder="Why is this file being deleted?"
+                    ></textarea>
+                    {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-medium transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={loading}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-70 flex items-center"
+                    >
+                        {loading ? 'Deleting...' : 'Delete File'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const FileList = () => {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
     const [actionLoading, setActionLoading] = useState(null);
+    
+    // Delete Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [fileToDelete, setFileToDelete] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     const fetchFiles = async () => {
         try {
@@ -60,6 +129,30 @@ const FileList = () => {
             alert("Failed to complete file. Permission denied?");
         } finally {
             setActionLoading(null);
+        }
+    };
+
+    const initiateDelete = (file) => {
+        setFileToDelete(file);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async (remarks) => {
+        if (!fileToDelete) return;
+        
+        setDeleteLoading(true);
+        try {
+            await api.post(`/file/${fileToDelete.id}/delete`, { remarks });
+            
+            // Remove from list locally
+            setFiles(files.filter(f => f.id !== fileToDelete.id));
+            setIsDeleteModalOpen(false);
+            setFileToDelete(null);
+        } catch (error) {
+            console.error("Error deleting file", error);
+            alert("Failed to delete file. Permission denied?");
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -96,6 +189,12 @@ const FileList = () => {
 
     const canComplete = (file) => {
         if (file.status === 'Completed') return false;
+        if (user.role === 'Admin' || user.role === 'Collector') return true;
+        if (user.role === 'Section Officer' && user.section === file.section) return true;
+        return false;
+    };
+
+    const canDelete = (file) => {
         if (user.role === 'Admin' || user.role === 'Collector') return true;
         if (user.role === 'Section Officer' && user.section === file.section) return true;
         return false;
@@ -176,13 +275,22 @@ const FileList = () => {
                                                         {actionLoading === file.id ? '...' : <><SquareCheck className="w-3.5 h-3.5 mr-1.5" /> Mark Done</>}
                                                     </button>
                                                 )}
+
+                                                {canDelete(file) && (
+                                                    <button
+                                                        onClick={() => initiateDelete(file)}
+                                                        className="flex items-center px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-xs font-semibold"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="px-6 py-12 text-center text-slate-400">
+                                    <td colSpan="8" className="px-6 py-12 text-center text-slate-400">
                                         <div className="flex flex-col items-center justify-center">
                                             <FileText className="w-12 h-12 mb-3 text-slate-200" />
                                             <p>No files found</p>
@@ -198,6 +306,13 @@ const FileList = () => {
             <div className="text-right text-xs text-slate-400 mt-4">
                 Showing {files.length} records
             </div>
+
+            <DeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                loading={deleteLoading}
+            />
         </div>
     );
 };

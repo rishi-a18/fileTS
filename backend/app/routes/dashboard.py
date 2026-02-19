@@ -22,20 +22,20 @@ def get_stats(current_user):
         sections = Section.query.filter_by(id=current_user.section_id).all()
     else:
         # Overall Stats (Global)
-        total = File.query.count()
-        pending = File.query.filter_by(status='Pending').count()
-        completed = File.query.filter_by(status='Completed').count()
-        overdue = File.query.filter_by(status='Overdue').count()
+        total = File.query.filter_by(is_deleted=False).count()
+        pending = File.query.filter_by(status='Pending', is_deleted=False).count()
+        completed = File.query.filter_by(status='Completed', is_deleted=False).count()
+        overdue = File.query.filter_by(status='Overdue', is_deleted=False).count()
         
         # Section-wise Stats (All Sections)
         sections = Section.query.all()
 
     section_stats = []
     for section in sections:
-        s_pending = File.query.filter_by(section_id=section.id, status='Pending').count()
-        s_overdue = File.query.filter_by(section_id=section.id, status='Overdue').count()
-        s_completed = File.query.filter_by(section_id=section.id, status='Completed').count()
-        s_total = File.query.filter_by(section_id=section.id).count()
+        s_pending = File.query.filter_by(section_id=section.id, status='Pending', is_deleted=False).count()
+        s_overdue = File.query.filter_by(section_id=section.id, status='Overdue', is_deleted=False).count()
+        s_completed = File.query.filter_by(section_id=section.id, status='Completed', is_deleted=False).count()
+        s_total = File.query.filter_by(section_id=section.id, is_deleted=False).count()
         
         section_stats.append({
             'name': section.name,
@@ -64,7 +64,7 @@ def get_alerts(current_user):
     # 3. Calculate SLA time elapsed
     # 4. If > 50% elapsed, add to alerts list
     
-    query = File.query.filter_by(status='Pending')
+    query = File.query.filter_by(status='Pending', is_deleted=False)
     
     if current_user.section_id:
         query = query.filter_by(section_id=current_user.section_id)

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, FileText, Upload, LogOut, Menu, X, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, FileText, Upload, LogOut, Menu, X, AlertTriangle, Trash2 } from 'lucide-react';
 import jntuLogo from '../assets/jntu.png';
 import apLogo from '../assets/ap.png';
 
@@ -68,6 +68,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                         >
                             <AlertTriangle className="w-5 h-5 mr-3 text-slate-400 group-hover:text-blue-600 transition-colors" />
                             Alerts
+                        </Link>
+                        <Link
+                            to="/dashboard/deleted-files"
+                            onClick={() => window.innerWidth < 768 && onClose()}
+                            className="flex items-center px-4 py-3 text-slate-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 group font-medium hover:shadow-sm"
+                        >
+                            <Trash2 className="w-5 h-5 mr-3 text-slate-400 group-hover:text-red-600 transition-colors" />
+                            Deleted Files
                         </Link>
                     </nav>
                 </div>

@@ -24,6 +24,7 @@ import DashboardHome from './pages/DashboardHome';
 import FileUpload from './pages/FileUpload';
 import FileList from './pages/FileList';
 import Alerts from './pages/Alerts';
+import DeletedFiles from './pages/DeletedFiles';
 
 import Home from './pages/Home';
 
@@ -43,6 +44,7 @@ function App() {
             <Route path="upload" element={<FileUpload />} />
             <Route path="files" element={<FileList />} />
             <Route path="alerts" element={<Alerts />} />
+            <Route path="deleted-files" element={<DeletedFiles />} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

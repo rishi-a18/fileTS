@@ -43,6 +43,8 @@ class File(db.Model):
     completion_date = db.Column(db.DateTime, nullable=True)
     reminder_sent = db.Column(db.Boolean, default=False)
     escalation_level = db.Column(db.Integer, default=0)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deletion_remarks = db.Column(db.String(255), nullable=True)
 
 class Alert(db.Model):
     id = db.Column(db.Integer, primary_key=True)
